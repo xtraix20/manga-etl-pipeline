@@ -2,75 +2,74 @@ import os
 import requests
 from bs4 import BeautifulSoup
 
-def extraer_manga(url, nombre_serie, num_capitulo):
-    print(f"\n🚀 [Fase 1: EXTRACT] Iniciando Scraper Dedicado para {nombre_serie} - Cap {num_capitulo}")
+def extract_manga(url, series_name, chapter_number):
+    print(f"\n🚀 [Phase 1: EXTRACT] Starting Dedicated Scraper for {series_name} - Ch {chapter_number}")
     
-    # 1. Crear el espacio de trabajo
-    nombre_carpeta = f"{nombre_serie}_{num_capitulo}"
-    os.makedirs(nombre_carpeta, exist_ok=True)
+    # 1. Create the workspace
+    folder_name = f"{series_name}_{chapter_number}"
+    os.makedirs(folder_name, exist_ok=True)
     
-    # 2. Disfrazar nuestro bot de Python como un navegador Safari de Mac real
-    # Las páginas no oficiales bloquean bots, con esto las engañamos.
+    # 2. Disguise our Python bot as a real Mac Safari browser
+    # Unofficial pages block bots, with this we trick them.
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15"
     }
 
     try:
-        print(f"🌐 Conectando con la página web...")
-        respuesta = requests.get(url, headers=headers)
-        respuesta.raise_for_status() # Detiene todo si el link está caído
+        print(f"🌐 Connecting to the website...")
+        response = requests.get(url, headers=headers)
+        response.raise_for_status() # Stops everything if the link is down
         
-        # 3. Analizar el HTML de la página
-        sopa = BeautifulSoup(respuesta.text, 'html.parser')
+        # 3. Parse the HTML of the page
+        soup = BeautifulSoup(response.text, 'html.parser')
         
-             # 4. Encontrar todas las etiquetas de imagen (<img>)
-        imagenes = sopa.find_all('img')
+        # 4. Find all image tags (<img>)
+        images = soup.find_all('img')
         
-        contador = 1
-        print(f"🔍 DIAGNÓSTICO: La página me entregó {len(imagenes)} etiquetas <img> en total.")
-        print("📥 Descargando y ordenando páginas...")
+        counter = 1
+        print(f"🔍 DIAGNOSTIC: The page returned {len(images)} <img> tags in total.")
+        print("📥 Downloading and sorting pages...")
         
-        for img in imagenes:
-            # 1. Modo Detective: Imprimir TODOS los atributos de la imagen para ver dónde esconden el link real
-            print(f"\n🔍 Analizando atributos: {img.attrs}")
+        for img in images:
+            # 1. Detective Mode: Print ALL image attributes to see where they hide the real link
+            print(f"\n🔍 Analyzing attributes: {img.attrs}")
             
-            # 2. Invertimos la prioridad: Primero buscamos en los 'data', y de ÚLTIMO en el 'src' normal.
-            link_img = img.get('data-src') or img.get('data-lazy-src') or img.get('data-original') or img.get('src')
+            # 2. Reverse priority: First we look in the 'data' attributes, and LAST in the normal 'src'.
+            img_link = img.get('data-src') or img.get('data-lazy-src') or img.get('data-original') or img.get('src')
             
-            # 3. Si por desgracia agarramos el SVG fantasma, lo saltamos manualmente
-            if link_img and link_img.startswith('data:image'):
-                print("   ⚠️ Detectado placeholder Base64. Ignorando...")
+            # 3. If unfortunately we grab the phantom SVG, we skip it manually
+            if img_link and img_link.startswith('data:image'):
+                print("   ⚠️ Base64 placeholder detected. Ignoring...")
                 continue
                 
-            # Arreglamos el filtro para que sea a prueba de balas
-            if link_img and any(ext in link_img.lower() for ext in ['.jpg', '.png', '.jpeg', '.webp']):
+            # Fix the filter so it's bulletproof
+            if img_link and any(ext in img_link.lower() for ext in ['.jpg', '.png', '.jpeg', '.webp']):
                 
-                print(f"   🎯 Link real encontrado: {link_img}")
-                # ... (Aquí sigue tu código de Bajar los bytes de la imagen)
-                # Bajar los bytes de la imagen
-                img_data = requests.get(link_img, headers=headers).content
+                print(f"   🎯 Real link found: {img_link}")
+                # Download the bytes of the image
+                img_data = requests.get(img_link, headers=headers).content
                 
-                # Extraer la extensión (.jpg, .webp) y aplicar zero-padding (001, 002)
-                extension = link_img.split('.')[-1]
-                nombre_archivo = f"{contador:03d}.{extension}"
-                ruta_archivo = os.path.join(nombre_carpeta, nombre_archivo)
+                # Extract the extension (.jpg, .webp) and apply zero-padding (001, 002)
+                extension = img_link.split('.')[-1]
+                file_name = f"{counter:03d}.{extension}"
+                file_path = os.path.join(folder_name, file_name)
                 
-                # Guardar el archivo en el disco duro
-                with open(ruta_archivo, 'wb') as archivo_local:
-                    archivo_local.write(img_data)
+                # Save the file to the hard drive
+                with open(file_path, 'wb') as local_file:
+                    local_file.write(img_data)
                     
-                print(f"   ✔️ Guardada: {nombre_archivo}")
-                contador += 1
+                print(f"   ✔️ Saved: {file_name}")
+                counter += 1
         
-        print(f"✅ ¡Misión cumplida! {contador - 1} páginas guardadas en: {nombre_carpeta}")
-        return nombre_carpeta
+        print(f"✅ Mission accomplished! {counter - 1} pages saved in: {folder_name}")
+        return folder_name
 
     except Exception as error:
-        print(f"❌ Error en el Scraper: {error}")
+        print(f"❌ Scraper Error: {error}")
         return None
 
-# --- Bloque de Prueba ---
+# --- Test Block ---
 if __name__ == '__main__':
-    # Ahora sí, pon tu URL rebelde de Blue Lock
-    url_rebelde = "https://w45.blue-lock-manga.com/manga/blue-lock-chapter-16/"
-    extraer_manga(url_rebelde, "Blue_Lock", "016")
+    # Now, put your rebel Blue Lock URL
+    rebel_url = "https://w45.blue-lock-manga.com/manga/blue-lock-chapter-16/"
+    extract_manga(rebel_url, "Blue_Lock", "016")
