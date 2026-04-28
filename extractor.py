@@ -70,6 +70,8 @@ def extract_manga(url, series_name, chapter_number):
 
 # --- Test Block ---
 if __name__ == '__main__':
-    # Now, put your rebel Blue Lock URL
-    rebel_url = "https://w45.blue-lock-manga.com/manga/blue-lock-chapter-16/"
-    extract_manga(rebel_url, "Blue_Lock", "016")
+    url_input = input("Enter the manga chapter URL: ")
+    series_name_input = input("Enter the series name (e.g., Blue_Lock): ")
+    chapter_number_input = input("Enter the chapter number (e.g., 016): ")
+    
+    extract_manga(url_input, series_name_input, chapter_number_input)
