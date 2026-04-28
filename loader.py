@@ -41,8 +41,19 @@ def load_to_server(cbz_path, host, port, username, password, remote_dir="/data/M
         
         print(f"📤 Uploading {file_name} to {remote_dir}...")
         
-        # Ensure the remote directory exists (Optional advanced logic could create it)
-        # We assume /data/Manga/ already exists based on the requirements.
+        # Ensure the remote directory exists
+        try:
+            sftp.stat(remote_dir)
+        except IOError:
+            print(f"📁 Creating remote directory {remote_dir}...")
+            # Create directories one by one if needed (simple approach for one level deep)
+            try:
+                sftp.mkdir(remote_dir)
+            except IOError:
+                # If it's a nested path like /data/Manga/SeriesName, make sure /data/Manga exists first
+                # For our use case, we assume the parent already exists
+                pass
+
         sftp.put(cbz_path, remote_path)
         
         print(f"✅ Mission accomplished! File successfully uploaded to {remote_path}")
@@ -65,16 +76,3 @@ def load_to_server(cbz_path, host, port, username, password, remote_dir="/data/M
             transport.close()
             print("🔌 Connection closed.")
 
-# --- Test Block ---
-if __name__ == '__main__':
-    # These should ideally be set as environment variables
-    test_host = os.environ.get("SFTP_HOST", "lean-tiger.pikapod.net")
-    test_port = int(os.environ.get("SFTP_PORT", 22))
-    test_user = os.environ.get("SFTP_USER", "p23773")
-    test_pass = os.environ.get("SFTP_PASS", "lgY0Y9VSeJnslDh0qU4zudZo")
-    
-    test_file = "Blue_Lock_016.cbz"
-    if os.path.exists(test_file):
-         load_to_server(test_file, test_host, test_port, test_user, test_pass)
-    else:
-        print(f"⚠️ Test file '{test_file}' not found. Run the transformer first to test.")
